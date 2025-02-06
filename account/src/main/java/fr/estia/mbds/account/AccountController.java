@@ -9,20 +9,30 @@ import java.util.List;
 @RestController
 public class AccountController {
     public final AccountRepository accountRepository;
+    private final CustomerClient customerClient;
 
-    public AccountController(AccountRepository accountRepository) {
+    public AccountController(AccountRepository accountRepository, CustomerClient customerClient) {
 
         this.accountRepository = accountRepository;
+        this.customerClient = customerClient;
     }
     @GetMapping("/accounts")
     public List<Account> getAllAccounts() {
 
-        return accountRepository.findAll();
+        List<Account> accounts = accountRepository.findAll();
+        accounts.forEach(account -> {
+            account.setCustomer(customerClient.getCustomerById(account.getCustomerId()));
+        });
+        return accounts;
+
     }
 
     @GetMapping("/account/{id}")
     public Account getAccountById(@PathVariable String id) {
-        return accountRepository.findById(id).orElse(null);
+        Account account = accountRepository.findById(id).orElse(null);
+        account.setCustomer(customerClient.getCustomerById(account.getCustomerId()));
+        return account;
+
     }
 
 
